@@ -1,9 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 
-import { Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
 
 import { Product } from '../product';
-import { ProductService } from '../product.service';
 import { Store, select } from '@ngrx/store';
 import * as fromProduct from '../state/product.reducer';
 import * as productActions from '../state/product.actions';
@@ -13,38 +12,25 @@ import * as productActions from '../state/product.actions';
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.css']
 })
-export class ProductListComponent implements OnInit, OnDestroy {
+export class ProductListComponent implements OnInit {
   pageTitle = 'Products';
-  errorMessage: string;
 
-  displayCode: boolean;
+  errorMessage$: Observable<string>;
+  displayCode$: Observable<boolean>;
+  products$: Observable<Product[]>;
+  selectedProduct$: Observable<Product>;
 
-  products: Product[];
-
-  // Used to highlight the selected product in the list
-  selectedProduct: Product | null;
-
-  constructor(private store: Store<fromProduct.State>,
-    private productService: ProductService) { }
+  constructor(private store: Store<fromProduct.State>) {}
 
   ngOnInit(): void {
-    // TODO: unsub
-    this.store.pipe(select(fromProduct.getCurrentProduct)).subscribe(
-      currentProduct => this.selectedProduct = currentProduct
-    );
+    this.selectedProduct$ = this.store.pipe(select(fromProduct.getCurrentProduct));
 
-    this.productService.getProducts().subscribe(
-      (products: Product[]) => this.products = products,
-      (err: any) => this.errorMessage = err.error
-    );
+    this.store.dispatch(new productActions.Load());
+    this.products$ = this.store.pipe(select(fromProduct.getProducts));
 
-    // Todo: unsubscribe
-    this.store.pipe(select(fromProduct.getShowProductCode)).subscribe(
-      showProductCode => this.displayCode = showProductCode
-    );
-  }
+    this.displayCode$ = this.store.pipe(select(fromProduct.getShowProductCode));
 
-  ngOnDestroy(): void {
+    this.errorMessage$ = this.store.pipe(select(fromProduct.getError));
   }
 
   checkChanged(value: boolean): void {
@@ -58,5 +44,4 @@ export class ProductListComponent implements OnInit, OnDestroy {
   productSelected(product: Product): void {
     this.store.dispatch(new productActions.SetCurrentProduct(product));
   }
-
 }
