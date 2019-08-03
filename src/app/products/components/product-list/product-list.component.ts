@@ -12,7 +12,7 @@ export class ProductListComponent {
   @Input() errorMessage: string;
   @Input() displayCode: boolean;
   @Input() products: Product[];
-  @Input() selectedProduct: number;
+  @Input() selectedProduct: Product;
   @Output() checked = new EventEmitter<boolean>();
   @Output() initialisedNewProduct = new EventEmitter<void>();
   @Output() selected = new EventEmitter<Product>();
