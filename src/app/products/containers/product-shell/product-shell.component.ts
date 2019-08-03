@@ -1,20 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
-import { Product } from '../product';
+import { Product } from '../../product';
 import { Store, select } from '@ngrx/store';
-import * as fromProduct from '../state/product.reducer';
-import * as productActions from '../state/product.actions';
+import * as fromProduct from '../../state';
+import * as productActions from '../../state/product.actions';
 
 @Component({
-  selector: 'pm-product-list',
-  templateUrl: './product-list.component.html',
-  styleUrls: ['./product-list.component.css']
+  templateUrl: './product-shell.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProductListComponent implements OnInit {
-  pageTitle = 'Products';
-
+export class ProductShellComponent implements OnInit {
   errorMessage$: Observable<string>;
   displayCode$: Observable<boolean>;
   products$: Observable<Product[]>;
@@ -23,13 +20,11 @@ export class ProductListComponent implements OnInit {
   constructor(private store: Store<fromProduct.State>) {}
 
   ngOnInit(): void {
-    this.selectedProduct$ = this.store.pipe(select(fromProduct.getCurrentProduct));
-
     this.store.dispatch(new productActions.Load());
+
+    this.selectedProduct$ = this.store.pipe(select(fromProduct.getCurrentProduct));
     this.products$ = this.store.pipe(select(fromProduct.getProducts));
-
     this.displayCode$ = this.store.pipe(select(fromProduct.getShowProductCode));
-
     this.errorMessage$ = this.store.pipe(select(fromProduct.getError));
   }
 
