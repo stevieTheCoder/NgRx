@@ -119,9 +119,7 @@ export function reducer(state = initialState, action: ProductActions): ProductSt
       };
 
     case ProductActionTypes.CreateProductSuccess:
-      const createProducts = state.products.map(item =>
-        action.payload.id === item.id ? action.payload : item
-      );
+      const createProducts = [...state.products, action.payload];
       return {
         ...state,
         products: createProducts,
