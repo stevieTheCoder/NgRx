@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-import { Subscription } from 'rxjs';
+import { Subscription, from } from 'rxjs';
 
 import { Product } from '../product';
 import { ProductService } from '../product.service';
@@ -33,8 +33,7 @@ export class ProductEditComponent implements OnInit, OnDestroy {
 
   constructor(
     private store: Store<fromProduct.State>,
-    private fb: FormBuilder,
-    private productService: ProductService
+    private fb: FormBuilder
   ) {
     // Defines all of the validation messages for the form.
     // These could instead be retrieved from a file or database.
@@ -124,12 +123,7 @@ export class ProductEditComponent implements OnInit, OnDestroy {
   deleteProduct(): void {
     if (this.product && this.product.id) {
       if (confirm(`Really delete the product: ${this.product.productName}?`)) {
-        this.productService
-          .deleteProduct(this.product.id)
-          .subscribe(
-            () => this.store.dispatch(new productActions.ClearCurrentProduct()),
-            (err: any) => (this.errorMessage = err.error)
-          );
+        this.store.dispatch(new productActions.DeleteProduct(this.product.id));
       }
     } else {
       // No need to delete, it was never saved
@@ -140,25 +134,13 @@ export class ProductEditComponent implements OnInit, OnDestroy {
   saveProduct(): void {
     if (this.productForm.valid) {
       if (this.productForm.dirty) {
-        // Copy over all of the original product properties
-        // Then copy over the values from the form
-        // This ensures values not on the form, such as the Id, are retained
+
         const p = { ...this.product, ...this.productForm.value };
 
         if (p.id === 0) {
-          this.productService
-            .createProduct(p)
-            .subscribe(
-              product => this.store.dispatch(new productActions.SetCurrentProduct(product)),
-              (err: any) => (this.errorMessage = err.error)
-            );
+          this.store.dispatch(new productActions.CreateProduct(p));
         } else {
-          this.productService
-            .updateProduct(p)
-            .subscribe(
-              product => this.store.dispatch(new productActions.SetCurrentProduct(product)),
-              (err: any) => (this.errorMessage = err.error)
-            );
+          this.store.dispatch(new productActions.UpdateProduct(p));
         }
       }
     } else {
